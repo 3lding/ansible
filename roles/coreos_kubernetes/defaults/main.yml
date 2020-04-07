@@ -1,0 +1,7 @@
+---
+# defaults file for coreos_kubernetes
+#
+file_paths:
+  - path_name: "" 
+    file_name: "" 
+    file_contents: "" 

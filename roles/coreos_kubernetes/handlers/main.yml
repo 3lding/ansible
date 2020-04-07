@@ -1,0 +1,15 @@
+---
+# handlers file for coreos_kubernetes
+#
+# Reboot machine
+- name: reboot machine 
+  reboot:
+    connect_timeout: 60
+    reboot_timeout: 180
+    post_reboot_delay: 180
+
+# Reload sysctl
+- name: reload sysctl
+  shell: sysctl --system
+
+

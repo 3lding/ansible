@@ -1,0 +1,32 @@
+---
+# tasks file for coreos_kubernetes
+#
+# Create /etc/dnf/modules.d
+- name: Configure /etc/dnf/modules.d
+  file:
+   path: /etc/dnf/modules.d
+   state: directory
+   mode: '0755'
+- name: Enable fedora modular repositories
+  replace:
+    path: /etc/yum.repos.d/fedora-updates-modular.repo
+    regexp: '\[updates\-modular\](.*\n){1,}(enabled\=0)'
+    replace: '\1enabled=1'
+- name: Configure sysctl, modules and repository files
+  blockinfile:
+    path: "{{ item.path_name }}{{ item.file_name }}"
+    create: true
+    block: "{{ item.file_contents }}" 
+  loop: "{{ file_paths }}"
+  notify: reload sysctl
+- name: flush_handlers
+  meta: flush_handlers
+- name: Update rpm-ostree
+  shell: rpm-ostree update
+  notify: reboot machine
+# After updating rpm-ostree force handler to reboot
+- name: flush_handlers
+  meta: flush_handlers
+- name: Rebooted! Now install kubernetes and crio-o packages 
+  shell: rpm-ostree install kubectl-1.17.4 kubeadm-1.17.4 kubelet-1.17.4 cri-o
+  notify: reboot machine 
