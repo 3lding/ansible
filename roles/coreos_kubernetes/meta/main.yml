@@ -1,6 +1,7 @@
 galaxy_info:
   author: Phil T. 
   description: This role configures fedora CoreOS hosts for Kubernetes Cluster role 
+  role_name: coreos_kubernetes
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
