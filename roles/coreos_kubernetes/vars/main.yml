@@ -1,5 +1,10 @@
 ---
 # vars file for coreos_kubernetes
+pkg_list: 
+  - kubectl-1.17.4
+  - kubeadm-1.17.4
+  - kubelet-1.17.4 
+  - cri-o
 file_paths:
   /etc/dnf/modules.d/:
     - file_name: cri-o.module

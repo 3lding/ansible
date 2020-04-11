@@ -56,7 +56,14 @@
   shell: rpm-ostree update
   notify: reboot machine
 
+- name: flush_handlers
+  meta: flush_handlers
+
 # After updating rpm-ostree force handler to reboot
 - name: Rebooted! Now install kubernetes and cri-o packages
-  shell: rpm-ostree install kubectl-1.17.4 kubeadm-1.17.4 kubelet-1.17.4 cri-o
+  shell: rpm-ostree install "{{ item }}" 
+  register: pkg_install
+  loop: "{{ pkg_list }}"
+  changed_when: "'is already requested' not in pkg_install.stderr"
+  failed_when: "'Packages not found' in pkg_install.stderr"
   notify: reboot machine
