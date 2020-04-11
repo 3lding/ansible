@@ -1,70 +1,51 @@
 ---
 # vars file for coreos_kubernetes
 file_paths:
-  - path_name: /etc/sysctl.d/
-    file_name: 90-sysrq.conf
-    file_contents: kernel.sysrq = 0 
-  - path_name: /etc/sysctl.d/
-    file_name: 100-kubernetes.conf
-    file_contents: |
-       net.bridge.bridge-nf-call-iptables = 1
-       net.bridge.bridge-nf-call-ip6tables = 1
-       net.ipv4.ip_forward = 1
-       net.ipv6.conf.eth0.forwarding = 1
-       net.ipv6.conf.all.forwarding = 1 
-  - path_name: /etc/dnf/modules.d/
-    file_name: cri-o.module
-    file_contents: |
-      [crio-o]
-      name=cri-o
-      stream=1.17
-      profiles=
-      state=enabled
-  - path_name: /etc/yum.repos.d/
-    file_name: fedora-modular.repo
-    file_contents: |
-      [fedora-modular]
-      name=Fedora Modular $releasever - $basearch
-      #baseurl=http://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Modular/$basearch/os/
-      metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-modular-$releasever&arch=$basearch
-      enabled=1
-      #metadata_expire=7d
-      repo_gpgcheck=0
-      type=rpm
-      gpgcheck=1
-      gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch
-      skip_if_unavailable=False
-  - path_name: /etc/yum.repos.d/
-    file_name: fedora-updates-modular.repo
-    file_contents: |
-      [updates-modular]
-      name=Fedora Modular $releasever - $basearch - Updates
-      failovermethod=priority
-      #baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/$releasever/Modular/$basearch/
-      metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-modular-f$releasever&arch=$basearch
-      enabled=1
-      repo_gpgcheck=0
-      type=rpm
-      gpgcheck=1
-      metadata_expire=6h
-      gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch
-      skip_if_unavailable=False
-  - path_name: /etc/yum.repos.d/
-    file_name: kubernetes.repo
-    file_contents: |
-      [kubernetes]
-      name=Kubernetes
-      baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-      enabled=1
-      gpgcheck=1
-      repo_gpgcheck=1
-      gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-  - path_name: /etc/modules-load.d/
-    file_name: overlay.conf
-    file_contents: overlay
-  - path_name: /etc/modules-load.d/
-    file_name: br_netfilter.conf
-    file_contents: br_netfilter
-  - path_name: /etc/selinux/
-    file_name: config
-    file_contents: SELINUX=disabled 
+  /etc/dnf/modules.d/:
+    - file_name: cri-o.module
+      file_contents: |
+        [cri-o]
+        name=cri-o
+        stream=1.17
+        profiles=
+        state=enabled
+  /etc/modules-load.d/:
+    - file_name: overlay.conf
+      file_contents: overlay
+    - file_name: br_netfilter.conf
+      file_contents: br_netfilter
+  /etc/selinux/:
+    - file_name: config
+      file_contents: SELINUX=disabled
+sysctl_params:
+  90-sysrq.conf:
+    - param_name: kernel.sysrq
+      param_value: 0
+  100-kubernetes.conf:
+    - param_name: net.bridge.bridge-nf-call-iptables
+      param_value: 1 
+    - param_name: net.bridge.bridge-nf-call-ip6tables
+      param_value: 1
+    - param_name: net.ipv4.ip_forward
+      param_value: 1
+    - param_name: net.ipv6.conf.eth0.forwarding
+      param_value: 1
+    - param_name: net.ipv6.conf.all.forwarding
+      param_value: 1
+fedora_mod_repos:
+  /etc/yum.repos.d/:
+    - repo_file: fedora-modular.repo 
+      repo_section: fedora-modular
+      repo_option: enabled
+      repo_value: 1
+    - repo_file: fedora-updates-modular.repo
+      repo_section: updates-modular
+      repo_option: enabled
+      repo_value: 1
+kubernetes_repos:
+  Kubernetes:
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey_path: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    gpgcheck: 1
+    repo_gpgcheck: 1
+    enabled: 1

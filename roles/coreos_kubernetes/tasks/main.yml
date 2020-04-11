@@ -2,31 +2,61 @@
 # tasks file for coreos_kubernetes
 #
 # Create /etc/dnf/modules.d
-- name: Configure /etc/dnf/modules.d
+- name: Creating directory /etc/dnf/modules.d
   file:
    path: /etc/dnf/modules.d
    state: directory
    mode: '0755'
-- name: Enable fedora modular repositories
-  replace:
-    path: /etc/yum.repos.d/fedora-updates-modular.repo
-    regexp: '\[updates\-modular\](.*\n){1,}(enabled\=0)'
-    replace: '\1enabled=1'
-- name: Configure sysctl, modules and repository files
+
+# Create sysctl and modules files
+- name: Configuring /etc/modules-load.d/
   blockinfile:
-    path: "{{ item.path_name }}{{ item.file_name }}"
+    path: "{{ item.0.key + item.1.file_name }}"
     create: true
-    block: "{{ item.file_contents }}" 
-  loop: "{{ file_paths }}"
+    block: "{{ item.1.file_contents }}" 
   notify: reload sysctl
+  loop: "{{ file_paths|dict2items|subelements('value')|list }}"
+
+# Configure sysctl for kubernetes
+- name: Configuring sysctl
+  sysctl:
+    name: "{{ item.1.param_name }}"
+    value: "{{ item.1.param_value }}"
+    sysctl_file: "/etc/sysctl.d/{{ item.0.key }}"
+    reload: yes
+  loop: "{{ sysctl_params|dict2items|subelements('value')|list }}"
+
+# Enable /etc/yum.repos.d/ - Modular repositories 
+- name: Enabling fedora modular repositories
+  ini_file:
+    dest: "{{ item.0.key + item.1.repo_file }}" 
+    section: "{{ item.1.repo_section }}"
+    option: "{{ item.1.repo_option }}" 
+    value: "{{ item.1.repo_value }}" 
+  loop: "{{ fedora_mod_repos|dict2items|subelements('value')|list }}"
+
+# Add kubernetes repositories to /etc/yum.repos.d/
+- name: Adding kubernetes repositories
+  yum_repository:
+    name: "{{ item.key }}"
+    description: "{{ item.value.repo_description|default(item.key) }}"
+    baseurl: "{{ item.value.baseurl }}"
+    gpgkey: "{{ item.value.gpgkey_path }}"
+    repo_gpgcheck: "{{ item.value.repo_gpgcheck }}" 
+    gpgcheck: "{{ item.value.gpgcheck }}" 
+    enabled: "{{ item.value.enabled }}" 
+  loop: "{{ kubernetes_repos|dict2items }}"
+
+# For enforcing reboot
 - name: flush_handlers
   meta: flush_handlers
-- name: Update rpm-ostree
+
+# Update rpm-ostree
+- name: Updating rpm-ostree
   shell: rpm-ostree update
   notify: reboot machine
+
 # After updating rpm-ostree force handler to reboot
-- name: flush_handlers
-  meta: flush_handlers
-- name: Rebooted! Now install kubernetes and crio-o packages 
+- name: Rebooted! Now install kubernetes and cri-o packages
   shell: rpm-ostree install kubectl-1.17.4 kubeadm-1.17.4 kubelet-1.17.4 cri-o
-  notify: reboot machine 
+  notify: reboot machine

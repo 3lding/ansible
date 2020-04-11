@@ -2,6 +2,26 @@
 # defaults file for coreos_kubernetes
 #
 file_paths:
-  - path_name: "" 
-    file_name: "" 
-    file_contents: "" 
+  "": 
+     - file_name: {} 
+       file_contents: {}
+
+sysctl_params:
+  "":
+     - param_name: {}
+       param_value: {}
+
+fedora_mod_repos:
+  "":
+     - repo_file: {}
+       repo_section: {}
+       repo_option: {}
+       repo_value: {} 
+
+kubernetes_repos:
+  "": 
+    baseurl: {}
+    gpgkey_path: {}
+    gpgcheck: {}
+    repo_gpgcheck: {} 
+    enabled: {}
